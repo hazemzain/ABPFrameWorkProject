@@ -79,6 +79,7 @@ public class Demo1DbContext :
         builder.ConfigureTenantManagement();
         builder.ApplyConfiguration(new ProductConfigration());
         builder.ApplyConfiguration(new CategoryConfigration());
+        builder.ApplyConfigurationsFromAssembly(typeof(Demo1DbContext).Assembly);
 
         /* Configure your own tables/entities inside here */
 
