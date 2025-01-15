@@ -9,6 +9,7 @@ public class Demo1PermissionDefinitionProvider : PermissionDefinitionProvider
     public override void Define(IPermissionDefinitionContext context)
     {
         var myGroup = context.AddGroup(Demo1Permissions.GroupName);
+       
         //Define your own permissions here. Example:
         //myGroup.AddPermission(Demo1Permissions.MyPermission1, L("Permission:MyPermission1"));
     }

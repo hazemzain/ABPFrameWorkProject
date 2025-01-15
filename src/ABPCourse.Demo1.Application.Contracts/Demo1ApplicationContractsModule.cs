@@ -1,4 +1,5 @@
 using Volo.Abp.Account;
+using Volo.Abp.Authorization.Permissions;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.Identity;
 using Volo.Abp.Modularity;
@@ -26,5 +27,6 @@ namespace ABPCourse.Demo1;
     public override void PreConfigureServices(ServiceConfigurationContext context)
     {
         Demo1DtoExtensions.Configure();
+      
     }
 }

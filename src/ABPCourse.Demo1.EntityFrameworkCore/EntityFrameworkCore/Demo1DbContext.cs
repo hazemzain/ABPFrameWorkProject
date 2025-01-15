@@ -1,5 +1,6 @@
 ﻿using ABPCourse.Demo1.Catagories;
 using ABPCourse.Demo1.Configration;
+using ABPCourse.Demo1.Payment;
 using ABPCourse.Demo1.Products;
 using Microsoft.EntityFrameworkCore;
 using Volo.Abp.AuditLogging.EntityFrameworkCore;
@@ -55,6 +56,7 @@ public class Demo1DbContext :
     public DbSet<TenantConnectionString> TenantConnectionStrings { get; set; }
     public DbSet<Product> Products { get; set; }
     public DbSet<Catogry>Catogries { get; set; }
+    public DbSet<payment> Payments { get; set; }
     #endregion
 
     public Demo1DbContext(DbContextOptions<Demo1DbContext> options)
@@ -79,6 +81,7 @@ public class Demo1DbContext :
         builder.ConfigureTenantManagement();
         builder.ApplyConfiguration(new ProductConfigration());
         builder.ApplyConfiguration(new CategoryConfigration());
+        builder.ApplyConfiguration(new PaymentConfigration());
         builder.ApplyConfigurationsFromAssembly(typeof(Demo1DbContext).Assembly);
 
         /* Configure your own tables/entities inside here */
