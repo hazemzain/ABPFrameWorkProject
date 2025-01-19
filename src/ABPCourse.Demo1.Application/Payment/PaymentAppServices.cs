@@ -44,6 +44,26 @@ namespace ABPCourse.Demo1.Payment
             
 
         }
+        public async Task<PaymentDto>ProcessRefundAsync(Guid id)
+        {
+            var Payment= await _paymentRepository.GetAsync(id);
+            if (Payment == null)
+            {
+                throw new UserFriendlyException("Payment not found");
+            }
+
+            if (Payment.PaymentStatus != "Completed")
+            {
+                throw new UserFriendlyException("Only completed payments can be refunded.");
+            }
+            else
+            {
+                Payment.PaymentStatus = "Refunded";
+                await _paymentRepository.UpdateAsync(Payment);
+                return _objectMapper.Map<payment, PaymentDto>(Payment);
+
+            }
+        }
 
         public Task DeletePaymentAsync(Guid id)
         {
@@ -86,6 +106,31 @@ namespace ABPCourse.Demo1.Payment
             paymentToUpdateEntity.PayerName = paymentToUpdate.PayerName;
             await _paymentRepository.UpdateAsync(paymentToUpdateEntity);
             return _objectMapper.Map<payment, PaymentDto>(paymentToUpdateEntity);
+        }
+
+        public async Task<PaymentDto> CancelPaymentAsync(Guid paymentId)
+        {
+            var Payment=await _paymentRepository.GetAsync(paymentId);
+            if (Payment == null)
+            {
+                throw new UserFriendlyException("Payment not found");
+            }
+
+            if (Payment.PaymentStatus == "Completed")
+            {
+                throw new UserFriendlyException("Completed payments cannot be cancelled.");
+
+            }
+            else
+            {
+                Payment.PaymentStatus = "Cancelled";
+                await _paymentRepository.UpdateAsync(Payment);
+                return _objectMapper.Map<payment, PaymentDto>(Payment);
+                
+
+
+            }
+
         }
     }
 }

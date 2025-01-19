@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ABPCourse.Demo1.Payment;
 using Allure.NUnit;
 using ABPCourse.Demo1.Products;
+using Allure.Commons;
 using Moq;
 using Volo.Abp;
 using Volo.Abp.Domain.Repositories;
@@ -232,6 +233,134 @@ namespace ABPCourse.Demo1.Tests
             // Assert
             await act.Should().ThrowAsync<KeyNotFoundException>()
                 .WithMessage($"Payment with id: {paymentId} does not exist.");
+        }
+
+
+
+        #endregion
+
+        #region TestCases_For_CancelPaymentAsync
+        [Test]
+        public async Task CancelPaymentAsync_ShouldReturnCancelledPaymentDto_WhenPaymentExistsAndStatusIsCompleted()
+        {
+            // Arrange
+            var paymentId = Guid.NewGuid();
+            var existingPayment = new payment(paymentId, "TXN12345", 100.0m, "Completed", "HazemZain");
+            _PaymentRepositoryMock.Setup(repo => repo.GetAsync(paymentId, true, default)).ReturnsAsync(existingPayment);
+            _PaymentRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<payment>(), false, default)).ReturnsAsync(existingPayment);
+            var updatedPaymentDto = new PaymentDto
+            {
+                Id = paymentId.ToString(),
+                TransactionId = existingPayment.TransactionId,
+                Amount = existingPayment.Amount,
+                PaymentStatus = "Cancelled",
+                PayerName = existingPayment.PayerName
+            };
+            _MockObjectMapper.Setup(mapper => mapper.Map<payment, PaymentDto>(It.IsAny<payment>())).Returns(updatedPaymentDto);
+            // Act
+            var result = await _paymentAppService.CancelPaymentAsync(paymentId);
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(paymentId.ToString()));
+            Assert.That(result.TransactionId, Is.EqualTo(existingPayment.TransactionId));
+            Assert.That(result.Amount, Is.EqualTo(existingPayment.Amount));
+            Assert.That(result.PaymentStatus, Is.EqualTo("Cancelled"));
+            Assert.That(result.PayerName, Is.EqualTo(existingPayment.PayerName));
+        }
+        [Test]
+        public void CancelPaymentAsync_PaymentCompleted_ThrowsUserFriendlyException()
+        {
+            // Arrange
+            var paymentId = Guid.NewGuid();
+            var completedPayment = new payment(paymentId, "TXN123", 100, "Completed", "John Doe");
+            _PaymentRepositoryMock.Setup(repo => repo.GetAsync(paymentId,true,default)).ReturnsAsync(completedPayment);
+
+            // Act & Assert
+            var ex = Assert.ThrowsAsync<UserFriendlyException>(() => _paymentAppService.CancelPaymentAsync(paymentId));
+            Assert.That(ex.Message,Is.EqualTo("Completed payments cannot be cancelled."));
+        }
+
+
+
+
+
+        #endregion
+
+        #region TestCases_For_ProcessRefundAsync
+        
+
+        [Test]
+        public async Task ProcessRefundAsync_ShouldReturnRefundedPaymentDto_WhenPaymentExistsAndStatusIsCompleted()
+        {
+            // Arrange
+            var paymentId = Guid.NewGuid();
+            var existingPayment = new payment(paymentId, "TXN12345", 100.0m, "Completed", "HazemZain");
+            _PaymentRepositoryMock.Setup(repo => repo.GetAsync(paymentId, true, default)).ReturnsAsync(existingPayment);
+            _PaymentRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<payment>(), false, default)).ReturnsAsync(existingPayment);
+            var updatedPaymentDto = new PaymentDto
+            {
+                Id = paymentId.ToString(),
+                TransactionId = existingPayment.TransactionId,
+                Amount = existingPayment.Amount,
+                PaymentStatus = "Refunded",
+                PayerName = existingPayment.PayerName
+            };
+            _MockObjectMapper.Setup(mapper => mapper.Map<payment, PaymentDto>(It.IsAny<payment>())).Returns(updatedPaymentDto);
+            // Act
+            var result = await _paymentAppService.ProcessRefundAsync(paymentId);
+            // Assert
+            Assert.That(result, Is.Not.Null);
+            Assert.That(result.Id, Is.EqualTo(paymentId.ToString()));
+            Assert.That(result.TransactionId, Is.EqualTo(existingPayment.TransactionId));
+            Assert.That(result.Amount, Is.EqualTo(existingPayment.Amount));
+            Assert.That(result.PaymentStatus, Is.EqualTo("Refunded"));
+            Assert.That(result.PayerName, Is.EqualTo(existingPayment.PayerName));
+        }
+
+        [Test]
+        public void ProcessRefundAsync_ShouldReturnException_WhenPaymentNotFound()
+        {
+            // Arrange
+            var paymentId = Guid.NewGuid();
+
+            _PaymentRepositoryMock
+                .Setup(repo => repo.GetAsync(paymentId, true, default))
+                .ReturnsAsync((payment)null);
+
+            // Act
+            Func<Task> act = async () => await _paymentAppService.ProcessRefundAsync(paymentId);
+
+            // Assert
+            act.Should().ThrowAsync<UserFriendlyException>()
+                .WithMessage("Payment not found");
+        
+
+    }
+
+        [Test]
+        public void ProcessRefundAsync_ShouldReturnException_WhenPaymentStatusNotComplete()
+        {
+            var paymentId = Guid.NewGuid();
+            var existingPayment = new payment(paymentId, "TXN12345", 100.0m, "Pinding", "HazemZain");
+            _PaymentRepositoryMock.Setup(p => p.GetAsync(paymentId, true, default)).ReturnsAsync(existingPayment);
+            Func<Task> act = async () => await _paymentAppService.ProcessRefundAsync(paymentId);
+
+            act.Should().ThrowAsync<UserFriendlyException>().WithMessage("Only completed payments can be refunded");
+
+        }
+
+        //we should separate the Exception in services for each case
+
+        [Test]
+        public void ProcessRefundAsync_AlreadyRefunded_ThrowsUserFriendlyException()
+        {
+            var paymentId = Guid.NewGuid();
+            var existingPayment = new payment(paymentId, "TXN12345", 100.0m, "Refunded", "HazemZain");
+            _PaymentRepositoryMock.Setup(p => p.GetAsync(paymentId, true, default)).ReturnsAsync(existingPayment);
+            var ex = Assert.ThrowsAsync<UserFriendlyException>(async () =>
+                await _paymentAppService.ProcessRefundAsync(paymentId));
+            Assert.That(ex.Message, Is.EqualTo("Payment is already refunded."));
+
         }
 
 
