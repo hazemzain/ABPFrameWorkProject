@@ -208,7 +208,7 @@ public class Demo1HttpApiHostModule : AbpModule
         app.UseAuthorization();
 
         app.UseSwagger();
-        app.UseAbpSwaggerUI(c =>
+        app.UseSwaggerUI(c =>
         {
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Demo1 API");
 

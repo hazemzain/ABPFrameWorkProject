@@ -3,8 +3,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Events;
+using Volo.Abp.AspNetCore.Mvc;
 
 namespace ABPCourse.Demo1;
 
@@ -29,12 +31,18 @@ public class Program
         {
             Log.Information("Starting ABPCourse.Demo1.HttpApi.Host.");
             var builder = WebApplication.CreateBuilder(args);
+            
             builder.Host.AddAppSettingsSecretsJson()
                 .UseAutofac()
                 .UseSerilog();
             await builder.AddApplicationAsync<Demo1HttpApiHostModule>();
+            
             var app = builder.Build();
+            app.UseCors();
+
             await app.InitializeApplicationAsync();
+           
+           
             await app.RunAsync();
             return 0;
         }

@@ -12,7 +12,7 @@ namespace ABPCourse.Demo1.Payment
     {
         public Task<PaymentDto> CreatePaymentAsync(payment NewPaymentCreated);
         public Task<PaymentDto> GetPaymentByIdAsync(Guid id);
-        public Task<List<PaymentDto>> GetPaymentsAsync();
+        //public Task<List<PaymentDto>> GetPaymentsAsync();
         public Task<PaymentDto> UpdatePaymentAsync(Guid id, payment paymentToUpdate);
         public Task DeletePaymentAsync(Guid id);
         public Task<PaymentDto> ProcessRefundAsync(Guid id);

@@ -1,4 +1,5 @@
 ﻿using Volo.Abp.Account;
+using Volo.Abp.Application;
 using Volo.Abp.AutoMapper;
 using Volo.Abp.FeatureManagement;
 using Volo.Abp.FluentValidation;
@@ -19,6 +20,7 @@ namespace ABPCourse.Demo1;
     typeof(AbpTenantManagementApplicationModule),
     typeof(AbpFeatureManagementApplicationModule),
     typeof(AbpSettingManagementApplicationModule),
+    typeof(AbpTenantManagementApplicationModule),
     typeof(AbpFluentValidationModule)
     )]
 public class Demo1ApplicationModule : AbpModule
@@ -29,5 +31,9 @@ public class Demo1ApplicationModule : AbpModule
         {
             options.AddMaps<Demo1ApplicationModule>();
         });
+       
+
+
+
     }
 }

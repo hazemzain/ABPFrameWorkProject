@@ -57,6 +57,7 @@ public class Demo1DbContext :
     public DbSet<Product> Products { get; set; }
     public DbSet<Catogry>Catogries { get; set; }
     public DbSet<payment> Payments { get; set; }
+    public DbSet<Patient.Patient> Patient { get; set; }
     #endregion
 
     public Demo1DbContext(DbContextOptions<Demo1DbContext> options)
@@ -82,6 +83,7 @@ public class Demo1DbContext :
         builder.ApplyConfiguration(new ProductConfigration());
         builder.ApplyConfiguration(new CategoryConfigration());
         builder.ApplyConfiguration(new PaymentConfigration());
+        builder.ApplyConfiguration(new PatientConfigration());
         builder.ApplyConfigurationsFromAssembly(typeof(Demo1DbContext).Assembly);
 
         /* Configure your own tables/entities inside here */

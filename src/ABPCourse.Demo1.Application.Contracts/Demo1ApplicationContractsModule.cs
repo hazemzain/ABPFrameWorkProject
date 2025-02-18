@@ -20,6 +20,7 @@ namespace ABPCourse.Demo1;
     typeof(AbpSettingManagementApplicationContractsModule),
     typeof(AbpTenantManagementApplicationContractsModule),
     typeof(AbpObjectExtendingModule)
+
 )]
 [DependsOn(typeof(AbpFluentValidationModule))]
     public class Demo1ApplicationContractsModule : AbpModule

@@ -80,10 +80,10 @@ namespace ABPCourse.Demo1.Payment
             return _objectMapper.Map<payment, PaymentDto>(payment);
         }
 
-        public Task<List<PaymentDto>> GetPaymentsAsync()
-        {
-            throw new NotImplementedException();
-        }
+        //public Task<List<PaymentDto>> GetPaymentsAsync()
+        //{
+        //    return Task.CompletedTask;
+        //}
 
         public async Task<PaymentDto> UpdatePaymentAsync(Guid id, payment paymentToUpdate)
         {
@@ -106,6 +106,12 @@ namespace ABPCourse.Demo1.Payment
             paymentToUpdateEntity.PayerName = paymentToUpdate.PayerName;
             await _paymentRepository.UpdateAsync(paymentToUpdateEntity);
             return _objectMapper.Map<payment, PaymentDto>(paymentToUpdateEntity);
+        }
+
+        public async Task<List<PaymentDto>> GetAllPaymentsAsync()
+        {
+            var payments = await _paymentRepository.GetListAsync();
+            return _objectMapper.Map<List<payment>, List<PaymentDto>>(payments);
         }
 
         public async Task<PaymentDto> CancelPaymentAsync(Guid paymentId)
