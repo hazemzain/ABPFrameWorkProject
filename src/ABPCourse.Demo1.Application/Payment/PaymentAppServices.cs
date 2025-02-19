@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ABPCourse.Demo1.Appointments;
+using ABPCourse.Demo1.Messages;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -17,6 +19,8 @@ namespace ABPCourse.Demo1.Payment
 
         private readonly IRepository<payment, Guid> _paymentRepository;
         private readonly IObjectMapper _objectMapper;
+        private readonly IRepository<Appointment, Guid> _appointmentRepository;
+        private readonly IRepository<Message, Guid> _messageRepository;
 
         #endregion
 
@@ -26,6 +30,7 @@ namespace ABPCourse.Demo1.Payment
         {
             _paymentRepository = paymentRepository;
             _objectMapper = objectMapper;
+            
         }
 
         #endregion

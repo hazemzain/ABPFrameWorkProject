@@ -14,6 +14,7 @@ namespace ABPCourse.Demo1.Patients
         public Task<List<PatientDto>> GetPatientsAsync();
         public Task<PatientDto> UpdatePatientAsync(Guid id, Patient.Patient patientToUpdate);
         public Task DeletePatientAsync(Guid id);
+        Task<AppointmentDto> BookAppointmentAsync(CreateAppointmentDto input);
 
     }
 }

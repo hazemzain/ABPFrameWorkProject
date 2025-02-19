@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ABPCourse.Demo1.Appointments;
+using ABPCourse.Demo1.Messages;
 using ABPCourse.Demo1.Patients;
 using ABPCourse.Demo1.Payment;
 using AutoMapper.Internal.Mappers;
@@ -20,12 +22,16 @@ namespace ABPCourse.Demo1.Patient
     public class PatientAppService : ApplicationService, IPatientAppService
     {
         private readonly IRepository<Patient, Guid> _patientRepository;
+        private IRepository<Appointment, Guid> _appointmentRepository;
+        private IRepository<Message, Guid> _messageRepository;
         private readonly IObjectMapper _objectMapper;
 
-        public PatientAppService(IRepository<Patient, Guid> patientRepository, IObjectMapper objectMapper)
+        public PatientAppService(IRepository<Patient, Guid> patientRepository, IRepository<Appointment, Guid> appointmentRepository, IRepository<Message, Guid> messageRepository, IObjectMapper objectMapper)
         {
             _patientRepository = patientRepository;
             _objectMapper = objectMapper;
+            _appointmentRepository = appointmentRepository;
+            _messageRepository = messageRepository;
 
         }
         public async Task<PatientDto> CreatePatientAsync(CreatePatientDto NewPatientCreated)
@@ -99,5 +105,33 @@ namespace ABPCourse.Demo1.Patient
 
             return _objectMapper.Map<Patient, PatientDto>(updatedPatient);
         }
+        public async Task<AppointmentDto> BookAppointmentAsync(CreateAppointmentDto input)
+        {
+            //Appointment overlappingAppointment = null;
+              var overlappingAppointment=  await _appointmentRepository.FirstOrDefaultAsync(a =>
+                a.PatientId == input.PatientId && a.Date == input.Date);
+            if (overlappingAppointment != null)
+            {
+                throw new UserFriendlyException("An appointment already exists at this time.");
+            }
+            var appointment = _objectMapper.Map<CreateAppointmentDto, Appointment>(input);
+            await _appointmentRepository.InsertAsync(appointment);
+            return _objectMapper.Map<Appointment, AppointmentDto>(appointment);
+        }
+        public async Task<MessageDto> SendMedicalMessageAsync(CreateMessageDto input)
+        {
+            var appointment = await _appointmentRepository.GetAsync(input.AppointmentId);
+            if (appointment == null)
+            {
+                throw new UserFriendlyException("No matching appointment found.");
+            }
+            var message = _objectMapper.Map<CreateMessageDto, Message>(input);
+            await _messageRepository.InsertAsync(message);
+            return _objectMapper.Map<Message, MessageDto>(message);
+        }
+
+       
+
+
     }
 }

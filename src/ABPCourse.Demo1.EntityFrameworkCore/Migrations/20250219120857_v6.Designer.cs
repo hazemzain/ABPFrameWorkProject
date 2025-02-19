@@ -4,6 +4,7 @@ using ABPCourse.Demo1.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Volo.Abp.EntityFrameworkCore;
 
@@ -12,9 +13,11 @@ using Volo.Abp.EntityFrameworkCore;
 namespace ABPCourse.Demo1.Migrations
 {
     [DbContext(typeof(Demo1DbContext))]
-    partial class Demo1DbContextModelSnapshot : ModelSnapshot
+    [Migration("20250219120857_v6")]
+    partial class v6
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -27,6 +30,7 @@ namespace ABPCourse.Demo1.Migrations
             modelBuilder.Entity("ABPCourse.Demo1.Appointments.Appointment", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("Date")
@@ -109,6 +113,7 @@ namespace ABPCourse.Demo1.Migrations
             modelBuilder.Entity("ABPCourse.Demo1.Doctors.Doctor", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Address")
@@ -144,6 +149,7 @@ namespace ABPCourse.Demo1.Migrations
             modelBuilder.Entity("ABPCourse.Demo1.Messages.Message", b =>
                 {
                     b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("AppointmentId")
@@ -167,7 +173,7 @@ namespace ABPCourse.Demo1.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Messages");
+                    b.ToTable("Message");
                 });
 
             modelBuilder.Entity("ABPCourse.Demo1.Patient.Patient", b =>

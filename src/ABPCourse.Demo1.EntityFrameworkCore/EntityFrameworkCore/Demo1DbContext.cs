@@ -1,5 +1,8 @@
-﻿using ABPCourse.Demo1.Catagories;
+﻿using ABPCourse.Demo1.Appointments;
+using ABPCourse.Demo1.Catagories;
 using ABPCourse.Demo1.Configration;
+using ABPCourse.Demo1.Doctors;
+using ABPCourse.Demo1.Messages;
 using ABPCourse.Demo1.Payment;
 using ABPCourse.Demo1.Products;
 using Microsoft.EntityFrameworkCore;
@@ -58,6 +61,11 @@ public class Demo1DbContext :
     public DbSet<Catogry>Catogries { get; set; }
     public DbSet<payment> Payments { get; set; }
     public DbSet<Patient.Patient> Patient { get; set; }
+    public DbSet<Doctor>Doctor { get; set; }
+    public DbSet<Message> Messages { get; set; }
+    public DbSet<Appointment> Appointment { get; set; }
+
+
     #endregion
 
     public Demo1DbContext(DbContextOptions<Demo1DbContext> options)
@@ -84,6 +92,9 @@ public class Demo1DbContext :
         builder.ApplyConfiguration(new CategoryConfigration());
         builder.ApplyConfiguration(new PaymentConfigration());
         builder.ApplyConfiguration(new PatientConfigration());
+        builder.ApplyConfiguration(new MessageConfigration());
+        builder.ApplyConfiguration(new AppointmentConfigration());
+        builder.ApplyConfiguration(new DoctorConfigration());
         builder.ApplyConfigurationsFromAssembly(typeof(Demo1DbContext).Assembly);
 
         /* Configure your own tables/entities inside here */

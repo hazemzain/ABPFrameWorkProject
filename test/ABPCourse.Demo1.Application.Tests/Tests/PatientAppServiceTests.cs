@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using ABPCourse.Demo1.Appointments;
+using ABPCourse.Demo1.Messages;
 using ABPCourse.Demo1.Patient;
 using ABPCourse.Demo1.Patients;
 using ABPCourse.Demo1.Payment;
@@ -28,6 +31,8 @@ namespace ABPCourse.Demo1.Tests
 
         // private const IQueryable<Product>? ProductQuery = (IQueryable<Product>)null;
         private Mock<IRepository<Patient.Patient, Guid>> _PatientRepositoryMock;
+        private Mock<IRepository<Message, Guid>> _MessageRepositoryMock;
+        private Mock<IRepository<Appointment, Guid>> _AppointmentRepositoryMock;
         private Mock<IObjectMapper> _MockObjectMapper;
         private PatientAppService _PatientAppService;
 
@@ -40,7 +45,9 @@ namespace ABPCourse.Demo1.Tests
         {
             _PatientRepositoryMock = new Mock<IRepository<Patient.Patient, Guid>>();
             _MockObjectMapper = new Mock<IObjectMapper>();
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _AppointmentRepositoryMock = new Mock<IRepository<Appointment, Guid>>();
+            _MessageRepositoryMock = new Mock<IRepository<Message, Guid>>();
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
         }
 
         #endregion
@@ -334,7 +341,7 @@ namespace ABPCourse.Demo1.Tests
             _MockObjectMapper.Setup(m => m.Map<List<Patient.Patient>, List<PatientDto>>(It.IsAny<List<Patient.Patient>>()))
                 .Returns(new List<PatientDto>());
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act
             var result = await _PatientAppService.GetPatientsAsync();
@@ -392,7 +399,7 @@ namespace ABPCourse.Demo1.Tests
             _PatientRepositoryMock.Setup(repo => repo.GetAsync(patientId, true, default)).ReturnsAsync(updatedPatientData);
             _MockObjectMapper.Setup(m => m.Map<Patient.Patient, PatientDto>(updatedPatientData)).Returns(updatedPatientDto);
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act
             var result = await _PatientAppService.UpdatePatientAsync(patientId, updatedPatientData);
@@ -435,7 +442,7 @@ namespace ABPCourse.Demo1.Tests
             _PatientRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<Patient.Patient>(), false, default)).ReturnsAsync(existingPatient);
             _MockObjectMapper.Setup(m => m.Map<Patient.Patient, PatientDto>(existingPatient)).Returns(updatedPatientDto);
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act
             var result = await _PatientAppService.UpdatePatientAsync(patientId, existingPatient);
@@ -457,7 +464,7 @@ namespace ABPCourse.Demo1.Tests
 
             _PatientRepositoryMock.Setup(repo => repo.GetAsync(patientId, true, default)).ThrowsAsync(new Exception("Patient not found"));
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act & Assert
             await Should.ThrowAsync<Exception>(() => _PatientAppService.UpdatePatientAsync(patientId, updatedPatientData));
@@ -476,7 +483,7 @@ namespace ABPCourse.Demo1.Tests
             _PatientRepositoryMock.Setup(repo => repo.UpdateAsync(It.IsAny<Patient.Patient>(), false, default))
                 .ThrowsAsync(new Exception("Database error"));
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act & Assert
             await Should.ThrowAsync<Exception>(() => _PatientAppService.UpdatePatientAsync(patientId, updatedPatientData));
@@ -491,7 +498,7 @@ namespace ABPCourse.Demo1.Tests
             var patientId = Guid.Empty;
             var updatedPatientData = new Patient.Patient { Name = "Updated Name" };
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act & Assert
             await Should.ThrowAsync<NullReferenceException>(() => _PatientAppService.UpdatePatientAsync(patientId, updatedPatientData));
@@ -502,7 +509,7 @@ namespace ABPCourse.Demo1.Tests
             // Arrange
             var patientId = Guid.NewGuid();
 
-            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _MockObjectMapper.Object);
+            _PatientAppService = new PatientAppService(_PatientRepositoryMock.Object, _AppointmentRepositoryMock.Object, _MessageRepositoryMock.Object, _MockObjectMapper.Object);
 
             // Act & Assert
             await Should.ThrowAsync<NullReferenceException>(() => _PatientAppService.UpdatePatientAsync(patientId, null));
@@ -510,6 +517,131 @@ namespace ABPCourse.Demo1.Tests
 
 
 
+
+
+        #endregion
+
+        #region TestCases_For_BookAppointmentAsync
+        [Test]
+        public async Task BookAppointmentAsync_WhenCalledWithValidInput_ShouldCreateAppointment()
+        {
+            // Arrange
+            var createDto = new CreateAppointmentDto
+            {
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Date = new DateTime(2025, 5, 1, 10, 0, 0),
+                Notes = "Checkup"
+            };
+            var appointment = new Appointment
+            {
+                
+                PatientId = createDto.PatientId,
+                DoctorId = createDto.DoctorId,
+                Date = createDto.Date,
+                Notes = createDto.Notes
+            };
+            var appointmentDto = new AppointmentDto
+            {
+                Id = appointment.Id,
+                PatientId = appointment.PatientId,
+                DoctorId = appointment.DoctorId,
+                Date = appointment.Date,
+                Notes = appointment.Notes
+            };
+
+            _MockObjectMapper.Setup(m => m.Map<CreateAppointmentDto, Appointment>(createDto))
+                .Returns(appointment);
+
+            //var existingAppointments = new List<Appointment>(); // No overlapping appointments
+
+            //_AppointmentRepositoryMock
+            //    .Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Appointment, bool>>>(), default))
+            //    .ReturnsAsync((Expression<Func<Appointment, bool>> predicate) =>
+            //    {
+            //        return existingAppointments.AsQueryable().FirstOrDefault(predicate);
+            //    });
+
+
+            _AppointmentRepositoryMock
+                .Setup(repo => repo.InsertAsync(It.IsAny<Appointment>(), true, default))
+                .ReturnsAsync(appointment);
+
+            _MockObjectMapper.Setup(m => m.Map<Appointment, AppointmentDto>(appointment))
+                .Returns(appointmentDto);
+
+            // Act
+            var result = await _PatientAppService.BookAppointmentAsync(createDto);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Id.ShouldBe(appointment.Id);
+            result.PatientId.ShouldBe(appointment.PatientId);
+            result.DoctorId.ShouldBe(appointment.DoctorId);
+            result.Date.ShouldBe(appointment.Date);
+            result.Notes.ShouldBe(appointment.Notes);
+
+        }
+        [Test]
+        public void BookAppointmentAsync_WhenOverlappingAppointmentExists_ShouldThrowException()
+        {
+            // Arrange
+            var createDto = new CreateAppointmentDto
+            {
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Date = new DateTime(2025, 5, 1, 10, 0, 0),
+                Notes = "Checkup"
+            };
+            var existingAppointment = new Appointment
+            {
+                
+                PatientId = createDto.PatientId,
+                DoctorId = createDto.DoctorId,
+                Date = createDto.Date,
+                Notes = "Existing Appointment"
+            };
+
+            _AppointmentRepositoryMock
+                .Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Appointment, bool>>>(),default))
+                .ReturnsAsync(existingAppointment); // Overlapping appointment exists
+
+            // Act & Assert
+            Should.ThrowAsync<UserFriendlyException>(async () =>
+                await _PatientAppService.BookAppointmentAsync(createDto));
+        }
+
+        [Test]
+        public void BookAppointmentAsync_WhenInputIsNull_ShouldThrowException()
+        {
+            // Act & Assert
+            Should.ThrowAsync<ArgumentNullException>(async () =>
+                await _PatientAppService.BookAppointmentAsync(null));
+        }
+        [Test]
+        public void BookAppointmentAsync_WhenInsertFails_ShouldThrowException()
+        {
+            // Arrange
+            var createDto = new CreateAppointmentDto
+            {
+                PatientId = Guid.NewGuid(),
+                DoctorId = Guid.NewGuid(),
+                Date = new DateTime(2025, 5, 1, 10, 0, 0),
+                Notes = "Checkup"
+            };
+
+            _AppointmentRepositoryMock
+                .Setup(repo => repo.FirstOrDefaultAsync(It.IsAny<Expression<Func<Appointment, bool>>>(),default))
+                .ReturnsAsync((Appointment)null); // No overlapping appointment
+
+            _AppointmentRepositoryMock
+                .Setup(repo => repo.InsertAsync(It.IsAny<Appointment>(), true, default))
+                .ThrowsAsync(new Exception("Database error"));
+
+            // Act & Assert
+            Should.ThrowAsync<Exception>(async () =>
+                await _PatientAppService.BookAppointmentAsync(createDto));
+        }
 
 
         #endregion
