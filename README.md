@@ -73,6 +73,9 @@ The Payment Module is designed to handle all payment-related operations, ensurin
 ### 5. Delete Patient
 - **`DELETE /api/patient/{id}`**
 
+### 5. Appointment API
+- **`POST /api/appointments`**
+
 ---
 
 ## Testing and Validation
